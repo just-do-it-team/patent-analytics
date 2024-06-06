@@ -1,8 +1,5 @@
-import { useEffect } from "react"
 import {
   CartesianGrid,
-  Label,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -10,38 +7,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import {
-  useAppDispatch,
-  useAppSelector,
-} from "@/app/providers/store-provider/config/hooks"
-import { Spinner } from "@/shared/ui/spinner/Spinner"
-import { FetchError } from "@/features/fetch-error"
-import {
-  getAdvancedData,
-  getAnalyticsData,
-} from "@/entities/analytics/model/services/analyticsService"
-import { currentWeek } from "@/shared/config/date/date-formats"
 import moment from "moment"
-import { Card, Typography } from "antd"
+import { Typography } from "antd"
 import classes from "./chart.module.scss"
 
 export const Chart = () => {
-  const { activeTab } = useAppSelector(state => state.analytics)
-  const dispatch = useAppDispatch()
-
-  useEffect(() => {
-    if (activeTab === "1") dispatch(getAnalyticsData())
-    if (activeTab === "2") {
-      dispatch(
-        getAdvancedData({
-          startDate: currentWeek[0],
-          endDate: currentWeek[1],
-          server: "",
-        }),
-      )
-    }
-  }, [dispatch, activeTab])
-
   const mockData = [
     {
       name: "Page A",
@@ -79,9 +49,6 @@ export const Chart = () => {
       busy: 75,
     },
   ]
-  const formatXAxis = (tickItem: any) => {
-    return moment(tickItem).locale("ru").format("DD MMMM")
-  }
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
