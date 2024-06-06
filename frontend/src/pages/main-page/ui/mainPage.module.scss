@@ -1,5 +1,13 @@
-.MainPage {
+.main-page {
     display: flex;
+    flex-direction: column;
 }
 
+.title {
+    margin: 0 !important;
+}
 
+.description {
+    margin: 10px 0;
+    font-size: 1.1rem;
+}

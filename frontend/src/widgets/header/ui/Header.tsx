@@ -14,7 +14,7 @@ export const Header: FC = memo(() => {
           <LogoSvg className={classes.logo} />
         </Link>
         <Typography.Title level={1} className={classes.title}>
-          Project Title
+            Patent Analytics
         </Typography.Title>
       </div>
       <div className={classes.profile}>

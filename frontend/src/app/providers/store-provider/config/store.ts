@@ -1,15 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { combineReducers } from "redux"
-// import { categoryReducer } from "@/entities/category"
-// import { authReducer } from "@/entities/auth"
+import { analyticsReducer } from "@/entities/analytics"
 
 export const rootReducer = combineReducers({
-  // category: categoryReducer,
-  // auth: authReducer,
+  analytics: analyticsReducer,
 })
 
 const store = configureStore({
-  reducer: {},
+  reducer: rootReducer,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: false,
