@@ -1,0 +1,37 @@
+//@import '~antd/dist/antd.css';
+@import "./layout/layout";
+@import "./constants";
+@import "./components";
+
+body {
+    margin: 0 auto;
+    padding: 0;
+    max-width: 1600px;
+    //background: url("../assets/images/rosenergoatom_background.png") left top no-repeat;
+    //background-size: cover;
+    //background-position: center 140px;
+    background-color: var(--bg-color);
+    height: 100vh;
+}
+
+// Scrollbar
+*::-webkit-scrollbar-track {
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: var(--white);
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #8191a799;
+    cursor: pointer;
+}
+
+* {
+    scrollbar-color: #8191a799 var(--white);
+}

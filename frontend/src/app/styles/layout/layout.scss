@@ -1,0 +1,37 @@
+.ant-layout {
+    background-color: transparent;
+}
+
+.ant-layout-sider {
+    background-color: transparent;
+    margin: 20px 15px;
+}
+
+.ant-layout-content {
+    background-color: transparent;
+    margin-bottom: 2rem;
+}
+
+.ant-layout-header {
+    display: flex;
+    justify-content: space-between;
+    background-color: transparent;
+    padding: 5px 15px;
+    height: 100%;
+}
+
+.ant-layout-footer {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--white);
+    //box-shadow: 0 0 0 -1px rgb(0 0 0 / 20%), 0 4px 5px 8px rgb(0 0 0 / 14%), 0 1px 10px 0 rgb(0 0 0 / 12%);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+}

@@ -1,0 +1,33 @@
+:root {
+    // MediaQuery
+    --xs: 480px;
+    --sm: 576px;
+    --md: 768px;
+    --lg: 992px;
+    --xl: 1200px;
+    --xxl: 1440px;
+    --xxxl: 1600px;
+
+    // Base
+    --border-radius: 8px;
+    --space: 0.8rem;
+    --padding-xxl: calc(var(--space) * 6);
+    --padding-xl: calc(var(--space) * 4);
+    --padding-lg: calc(var(--space) * 3);
+    --padding-md: calc(var(--space) * 2);
+    --padding-sm: calc(var(--space) * 1.5);
+    --padding-xs: var(--space);
+    --padding-xxs: calc(var(--space) / 2);
+    --padding-xxxs: calc(var(--space) / 4);
+    --margin-xl: calc(var(--space) * 4);
+    --margin-lg: calc(var(--space) * 3);
+    --margin-md: calc(var(--space) * 2);
+    --margin-sm: calc(var(--space) * 1.5);
+    --margin-xs: var(--space);
+    --margin-xss: calc(var(--space) / 2);
+
+    // Input
+    --input-font-size: 0.9rem;
+    --input-border-color: var(--grey-300);
+    --input-placeholder-color: var(--grey-500);
+}

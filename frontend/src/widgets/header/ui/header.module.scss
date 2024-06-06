@@ -1,0 +1,40 @@
+.container {
+    display: flex;
+    align-items: center;
+
+    .title {
+        display: flex;
+        align-items: center;
+        color: var(--black);
+        font-size: 1.5rem;
+        margin: 10px 0 10px 35px;
+        text-transform: capitalize;
+    }
+
+    .link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .logo {
+            width: 45px;
+            height: 45px;
+        }
+    }
+}
+
+.profile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .icon {
+        font-size: 1.5rem;
+    }
+
+    .role {
+        font-size: 0.9rem;
+        margin: 0 10px;
+        line-height: normal;
+    }
+}
