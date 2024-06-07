@@ -1,26 +1,22 @@
-import { classNames } from "@/shared/lib/classNames/classNames"
 import classes from "./mainPage.module.scss"
+import { Typography } from "antd"
+import { FileUpload } from "@/features/file-upload"
 import { Block } from "@/shared/ui/block/Block"
-import { Button, Flex } from "antd"
 
-interface MainPageProps {
-  className?: string
+const MainPage = () => {
+  return (
+    <div className={classes["main-page"]}>
+      <Block className={classes["upload-block"]}>
+        <Typography.Title level={2} className={classes.title}>
+          Загрузить файл
+        </Typography.Title>
+        <Typography className={classes.description}>
+          Загрузите необходимый файл шаблона для аналитики
+        </Typography>
+        <FileUpload />
+      </Block>
+    </div>
+  )
 }
-
-const MainPage = ({ className }: MainPageProps) => (
-  <div className={classNames(classes.MainPage, {}, [className])}>
-    <Block>
-      <Flex gap="small" wrap="wrap">
-        <Button type="primary" className={classes.primary}>
-          Primary Button
-        </Button>
-        <Button>Default Button</Button>
-        <Button type="dashed">Dashed Button</Button>
-        <Button type="text">Text Button</Button>
-        <Button type="link">Link Button</Button>
-      </Flex>
-    </Block>
-  </div>
-)
 
 export default MainPage

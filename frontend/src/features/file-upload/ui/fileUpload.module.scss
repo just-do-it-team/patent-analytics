@@ -1,0 +1,58 @@
+.container {
+    display: flex;
+    align-items: center;
+
+    .upload {
+        width: 50%;
+        border-radius: 10px;
+        cursor: pointer;
+        background-color: white;
+    }
+
+    .attachment {
+        margin-left: 25px;
+
+        .attachment-title {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .link {
+            margin: 0 auto;
+            cursor: pointer;
+            color: #1890ff;
+        }
+    }
+
+    .upload-wrapper {
+        display: flex;
+        margin: 0 20px;
+
+        .upload-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .upload-text {
+            display: flex;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .upload-hint {
+            display: flex;
+            font-size: 0.8rem;
+        }
+    }
+}
+
+.upload-btn {
+    margin: 25px 0 0 0;
+    width: 50%;
+    height: 2.5rem;
+}

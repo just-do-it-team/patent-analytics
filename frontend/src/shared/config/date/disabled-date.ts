@@ -1,5 +1,5 @@
-import moment from 'moment';
+import moment from "moment"
 
 export function disabledPeriodDate(current: any) {
-    return current && current < moment().startOf('day');
+  return current && current > moment().add(1, "d").startOf("day")
 }

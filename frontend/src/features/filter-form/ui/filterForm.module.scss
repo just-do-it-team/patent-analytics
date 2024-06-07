@@ -1,0 +1,41 @@
+.form {
+    display: flex;
+}
+
+.filter {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 35rem;
+}
+
+.title {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.field {
+    margin: 5px 0;
+}
+
+.expiredDateField {
+    display: flex;
+    margin-top: 5px;
+}
+
+.expirationSwitch {
+    margin-right: 10px;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.submitButton {
+    width: 10rem;
+    margin-top: 15px;
+}
