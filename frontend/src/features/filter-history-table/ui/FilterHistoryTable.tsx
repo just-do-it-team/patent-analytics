@@ -1,10 +1,10 @@
 import React, { memo, useState } from "react"
 import { TablePaginationConfig } from "antd"
-import classes from "./filesHistoryTable.module.scss"
-import { useColumns } from "@/features/files-history-table/config/useColumns"
+import classes from "./filterHistoryTable.module.scss"
 import { TableComponent } from "@/shared/ui/table"
+import { useColumns } from "@/features/filter-history-table/config/useColumns"
 
-export const FilesHistoryTable = memo(() => {
+export const FilterHistoryTable = memo(() => {
   const [page, setPage] = useState<number>(1)
   const [limit, setLimit] = useState<number>(6)
   const [total, setTotal] = useState<number>(1)
@@ -55,7 +55,7 @@ export const FilesHistoryTable = memo(() => {
     <div className={classes.table}>
       <TableComponent
         rowSelection={rowSelection}
-        сaption={"Загруженные файлы"}
+        сaption={"История поиска"}
         onChange={handleTableChange}
         total={total}
         columns={historyColumns}

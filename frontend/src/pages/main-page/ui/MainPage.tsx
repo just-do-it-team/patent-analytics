@@ -6,7 +6,7 @@ import { Block } from "@/shared/ui/block/Block"
 const MainPage = () => {
   return (
     <div className={classes["main-page"]}>
-      <Block>
+      <Block className={classes["upload-block"]}>
         <Typography.Title level={2} className={classes.title}>
           Загрузить файл
         </Typography.Title>

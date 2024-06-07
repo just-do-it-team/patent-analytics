@@ -1,11 +1,14 @@
 import { Menu, MenuProps } from "antd"
 import React, { FC, memo, useEffect, useState } from "react"
-import { HomeOutlined, BarChartOutlined } from "@ant-design/icons"
+import {
+  HomeOutlined,
+  BarChartOutlined,
+  ImportOutlined,
+} from "@ant-design/icons"
 import classes from "./navbar.module.scss"
 import { Link, useLocation } from "react-router-dom"
 import { RouteNames } from "@/app/providers/router/config/routeConfig"
 
-type MenuItem = Required<MenuProps>["items"][number]
 export const Navbar: FC = memo(() => {
   const location = useLocation()
   const [current, setCurrent] = useState(location.pathname)
@@ -28,6 +31,11 @@ export const Navbar: FC = memo(() => {
       icon: <BarChartOutlined />,
       label: <Link to={RouteNames.ANALYTICS}>Аналитика</Link>,
       key: RouteNames.ANALYTICS,
+    },
+    {
+      icon: <ImportOutlined />,
+      label: <Link to={RouteNames.IMPORT}>Отчет</Link>,
+      key: RouteNames.IMPORT,
     },
   ]
 
