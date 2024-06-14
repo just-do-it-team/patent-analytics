@@ -1,17 +1,48 @@
-import React, { memo, useState } from "react"
-import { TablePaginationConfig } from "antd"
+import { Key, memo, useEffect, useState } from "react"
+import { Button, TablePaginationConfig, Typography } from "antd"
 import classes from "./filesHistoryTable.module.scss"
 import { useColumns } from "@/features/files-history-table/config/useColumns"
 import { TableComponent } from "@/shared/ui/table"
+import {
+  useAppDispatch,
+  useAppSelector,
+} from "@/app/providers/store-provider/config/hooks"
+import {
+  downloadFilesHistoryAnalytics,
+  getFilesHistoryData,
+} from "@/entities/export/model/services/exportServices"
+import { DownloadOutlined } from "@ant-design/icons"
 
 export const FilesHistoryTable = memo(() => {
+  const dispatch = useAppDispatch()
+  const { filesHistory, downloadLink } = useAppSelector(state => state.export)
   const [page, setPage] = useState<number>(1)
-  const [limit, setLimit] = useState<number>(6)
+  const [limit, setLimit] = useState<number>(10)
   const [total, setTotal] = useState<number>(1)
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([])
 
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys)
+  const filesHistoryColumns = useColumns()
+
+  useEffect(() => {
+    dispatch(
+      getFilesHistoryData({
+        limit,
+        page,
+      }),
+    )
+  }, [dispatch, limit, page, downloadLink])
+
+  useEffect(() => {
+    if (filesHistory.data) setTotal(filesHistory.data.count)
+  }, [filesHistory])
+
+  const handleTableChange = (pagination: TablePaginationConfig) => {
+    setPage(pagination.current!)
+    setLimit(pagination.pageSize!)
+    setTotal(filesHistory.data.count)
+  }
+
+  const onSelectChange = (newSelectedRowKeys: Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys)
   }
 
@@ -19,54 +50,35 @@ export const FilesHistoryTable = memo(() => {
     selectedRowKeys,
     onChange: onSelectChange,
   }
-  const hasSelected = selectedRowKeys.length > 0
-
-  const historyColumns = useColumns()
-
-  // useEffect(() => {
-  //   if (selectedListSI && selectedListSI?.id)
-  //     dispatch(getHistoryData({ id: selectedListSI.id, page, limit }))
-  // }, [dispatch, limit, page, selectedListSI, isOpenModal])
-
-  // useEffect(() => {
-  //   if (historyData) setTotal(historyData.count)
-  // }, [historyData])
-
-  // useEffect(() => {
-  //   if (historyData) {
-  //     dispatch(setLastHistorySI(historyData.list[1]))
-  //     dispatch(setNextHistorySI(historyData.list[0]))
-  //   }
-  // }, [dispatch, historyData])
-
-  const handleTableChange = (pagination: TablePaginationConfig) => {
-    // setPage(pagination.current)
-    // setLimit(pagination.pageSize)
-    // setTotal(historyData.count)
-  }
-
-  const onRowClick = (record: any) => () => {
-    if (record) {
-      // dispatch(setSelectedHistorySI(record))
-    }
-  }
 
   return (
     <div className={classes.table}>
+      <Typography.Title level={3} className={classes["table-title"]}>
+        {"История загруженых файлов"}
+      </Typography.Title>
+      <div className={classes["table-controls"]}>
+        <Button
+          disabled={!selectedRowKeys.length}
+          type={"default"}
+          onClick={() =>
+            dispatch(downloadFilesHistoryAnalytics({ ids: selectedRowKeys }))
+          }
+          icon={<DownloadOutlined />}
+        >
+          {selectedRowKeys.length > 1
+            ? "Объединить и скачать аналитику"
+            : "Скачать аналитику"}
+        </Button>
+      </div>
       <TableComponent
         rowSelection={rowSelection}
-        сaption={"Загруженные файлы"}
         onChange={handleTableChange}
         total={total}
-        columns={historyColumns}
-        dataSource={[]}
+        isLoading={filesHistory.isLoading}
+        isError={!!filesHistory.error}
+        columns={filesHistoryColumns}
+        dataSource={filesHistory && filesHistory.data.results}
         rowKey={record => record.id}
-        // rowClassName={record =>
-        //   record.id === selectedHistorySI.id && "ant-table-row-selected"
-        // }
-        onRow={record => ({
-          onClick: onRowClick(record),
-        })}
       />
     </div>
   )

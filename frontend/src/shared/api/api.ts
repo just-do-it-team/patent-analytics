@@ -2,7 +2,7 @@ import axios from "axios"
 import { SERVER_URL } from "@/app/config"
 
 export const Endpoints = {
-  MAIN: "main",
+  FILE_HISTORY: "file_history",
 }
 
 export const api = axios.create({

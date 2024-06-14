@@ -1,5 +1,5 @@
 import { Menu, MenuProps } from "antd"
-import React, { FC, memo, useEffect, useState } from "react"
+import { FC, memo, useEffect, useState } from "react"
 import {
   HomeOutlined,
   BarChartOutlined,
@@ -28,14 +28,14 @@ export const Navbar: FC = memo(() => {
       key: RouteNames.MAIN,
     },
     {
-      icon: <BarChartOutlined />,
-      label: <Link to={RouteNames.ANALYTICS}>Аналитика</Link>,
-      key: RouteNames.ANALYTICS,
-    },
-    {
       icon: <ImportOutlined />,
       label: <Link to={RouteNames.IMPORT}>Отчет</Link>,
       key: RouteNames.IMPORT,
+    },
+    {
+      icon: <BarChartOutlined />,
+      label: <Link to={RouteNames.VISUALIZATION}>Визуализация</Link>,
+      key: RouteNames.VISUALIZATION,
     },
   ]
 

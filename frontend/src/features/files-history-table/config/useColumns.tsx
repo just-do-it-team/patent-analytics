@@ -1,28 +1,28 @@
 import { ColumnsType } from "antd/es/table"
 import { formatDateToString } from "@/shared/config/date/date-formats"
+import { FilesHistoryDataType } from "@/entities/export/model/types/exportSchema"
 
 export const useColumns = () => {
-  const historyColumns: ColumnsType<any> = [
+  const filesHistoryColumns: ColumnsType<FilesHistoryDataType> = [
     {
       title: "Имя файла",
-      dataIndex: "chn",
-      key: "chn",
-      width: "70%",
+      dataIndex: "file",
+      key: "file",
     },
+
     {
-      title: "Статус",
-      dataIndex: ["chstatusid", "chstatusname"],
-      key: "chstatusname",
-      width: "15%",
+      title: "Процент",
+      dataIndex: "percent",
+      key: "percent",
+      render: value => <span>{value} %</span>,
     },
     {
       title: "Дата загрузки",
-      dataIndex: "dplan",
-      key: "dplan",
-      width: "15%",
+      dataIndex: "datetime",
+      key: "datetime",
       render: value => <span>{formatDateToString(value)}</span>,
     },
   ]
 
-  return historyColumns
+  return filesHistoryColumns
 }
