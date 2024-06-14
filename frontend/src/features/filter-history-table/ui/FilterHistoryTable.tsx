@@ -1,69 +1,68 @@
-import React, { memo, useState } from "react"
-import { TablePaginationConfig } from "antd"
+import { memo, useEffect, useState } from "react"
+import { TablePaginationConfig, Typography } from "antd"
 import classes from "./filterHistoryTable.module.scss"
 import { TableComponent } from "@/shared/ui/table"
 import { useColumns } from "@/features/filter-history-table/config/useColumns"
+import { openModal } from "@/entities/import/model/slice/importSlice"
+import {
+  useAppDispatch,
+  useAppSelector,
+} from "@/app/providers/store-provider/config/hooks"
+import {
+  getFilterHistoryData,
+  getSelectedData,
+} from "@/entities/import/model/services/importServices"
+import { FilterHistoryDataType } from "@/entities/import/model/types/importSchema"
 
 export const FilterHistoryTable = memo(() => {
   const [page, setPage] = useState<number>(1)
-  const [limit, setLimit] = useState<number>(6)
+  const [limit, setLimit] = useState<number>(10)
   const [total, setTotal] = useState<number>(1)
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
 
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys)
-    setSelectedRowKeys(newSelectedRowKeys)
-  }
+  const filterHistoryColumns = useColumns()
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  }
-  const hasSelected = selectedRowKeys.length > 0
+  const dispatch = useAppDispatch()
+  const { filterHistory } = useAppSelector(state => state.import)
 
-  const historyColumns = useColumns()
+  useEffect(() => {
+    dispatch(
+      getFilterHistoryData({
+        limit,
+        page,
+      }),
+    )
+  }, [dispatch, limit, page])
 
-  // useEffect(() => {
-  //   if (selectedListSI && selectedListSI?.id)
-  //     dispatch(getHistoryData({ id: selectedListSI.id, page, limit }))
-  // }, [dispatch, limit, page, selectedListSI, isOpenModal])
-
-  // useEffect(() => {
-  //   if (historyData) setTotal(historyData.count)
-  // }, [historyData])
-
-  // useEffect(() => {
-  //   if (historyData) {
-  //     dispatch(setLastHistorySI(historyData.list[1]))
-  //     dispatch(setNextHistorySI(historyData.list[0]))
-  //   }
-  // }, [dispatch, historyData])
+  useEffect(() => {
+    if (filterHistory.data) setTotal(filterHistory.data.count)
+  }, [filterHistory])
 
   const handleTableChange = (pagination: TablePaginationConfig) => {
-    // setPage(pagination.current)
-    // setLimit(pagination.pageSize)
-    // setTotal(historyData.count)
+    setPage(pagination.current!)
+    setLimit(pagination.pageSize!)
+    setTotal(filterHistory.data.count)
   }
 
-  const onRowClick = (record: any) => () => {
+  const onRowClick = (record: FilterHistoryDataType) => () => {
     if (record) {
-      // dispatch(setSelectedHistorySI(record))
+      dispatch(getSelectedData({ id: record.id! }))
+      dispatch(openModal())
     }
   }
 
   return (
     <div className={classes.table}>
+      <Typography.Title level={3} className={classes["table-title"]}>
+        {"История отчетов"}
+      </Typography.Title>
       <TableComponent
-        rowSelection={rowSelection}
-        сaption={"История поиска"}
         onChange={handleTableChange}
         total={total}
-        columns={historyColumns}
-        dataSource={[]}
+        isLoading={filterHistory.isLoading}
+        isError={!!filterHistory.error}
+        columns={filterHistoryColumns}
+        dataSource={filterHistory && filterHistory.data.results}
         rowKey={record => record.id}
-        // rowClassName={record =>
-        //   record.id === selectedHistorySI.id && "ant-table-row-selected"
-        // }
         onRow={record => ({
           onClick: onRowClick(record),
         })}

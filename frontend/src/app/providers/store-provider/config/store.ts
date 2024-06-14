@@ -1,9 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { combineReducers } from "redux"
 import { analyticsReducer } from "@/entities/analytics"
+import { exportReducer } from "@/entities/export"
+import { importReducer } from "@/entities/import"
 
 export const rootReducer = combineReducers({
   analytics: analyticsReducer,
+  export: exportReducer,
+  import: importReducer,
 })
 
 const store = configureStore({

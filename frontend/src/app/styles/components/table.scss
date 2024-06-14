@@ -29,7 +29,7 @@
         border: 1px solid var(--table-br-color);
         border-radius: var(--border-radius) !important;
         height: 100%;
-        background-color: var(--bg-color);
+        background-color: var(--white);
     }
 
     .ant-table-tbody > tr > td {
@@ -62,7 +62,7 @@
         background-color: var(--th-bg-color);
         color: var(--black);
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         line-height: 2.4rem;
         overflow: hidden;
     }

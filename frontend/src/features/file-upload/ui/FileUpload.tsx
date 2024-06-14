@@ -1,13 +1,22 @@
 import { FC, useEffect, useState } from "react"
 import { Upload, Button, message, Typography } from "antd"
 import classes from "./fileUpload.module.scss"
-import axios from "axios"
-import { SERVER_URL } from "@/app/config"
-import { FileDoneOutlined } from "@ant-design/icons"
+import { UploadOutlined, FileDoneOutlined } from "@ant-design/icons"
+import {
+  useAppDispatch,
+  useAppSelector,
+} from "@/app/providers/store-provider/config/hooks"
+import {
+  downloadAnalyticsFile,
+  uploadAnalyticsFile,
+} from "@/entities/export/model/services/exportServices"
+import { setDownloadLink } from "@/entities/export/model/slice/exportSlice"
 
 export const FileUpload: FC = () => {
+  const dispatch = useAppDispatch()
+  const { downloadLink } = useAppSelector(state => state.export)
   const [fileList, setFileList] = useState<any[]>([])
-  const [downloadLink, setDownloadLink] = useState<string>()
+  // const [downloadLink, setDownloadLink] = useState<string | null>()
 
   useEffect(() => {
     if (downloadLink) {
@@ -15,100 +24,107 @@ export const FileUpload: FC = () => {
     }
   }, [downloadLink])
 
-  const handleUpload = async () => {
+  const alowedFileTypes: string[] = [
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ]
+
+  const onUpload = async () => {
     const formData = new FormData()
     fileList.forEach(file => {
       formData.append("files", file.originFileObj)
     })
 
-    try {
-      message.loading({
-        content: "Загрузка...",
-        key: "uploadFile",
-        duration: 0,
-      })
-      const response = await axios.post(`${SERVER_URL}/api/upload/`, formData)
-      const newLink = response.data.processed_files
-      setDownloadLink(newLink)
-      message.success({ content: "Успешно загружено", key: "uploadFile" })
-    } catch (error) {
-      message.error({ content: "Не удалось загрузить", key: "uploadFile" })
-    }
+    dispatch(uploadAnalyticsFile({ formData }))
   }
   const handleFileChange = (info: any) => {
-    setFileList(info.fileList)
+    if (
+      info.fileList[0] &&
+      !alowedFileTypes.find(t => t === info.fileList[0].type)
+    ) {
+      message.error({
+        content: "Неподдерживаемый формат файла, поддерживаемые форматы: .xlsx",
+        duration: 3,
+      })
+    } else {
+      setFileList(info.fileList)
+    }
   }
 
-  const downloadFile = async () => {
-    try {
-      message.loading({
-        content: "Cкачивание...",
-        key: "downloadFile",
-        duration: 0,
-      })
-      await fetch(`${SERVER_URL}/api/download/`, {
-        method: "GET",
-      })
-        .then(res => res.blob())
-        .then(data => {
-          const url = URL.createObjectURL(data)
-          const anchor = document.createElement("a")
-          anchor.href = url
-          anchor.download = "downloadLink"
-          document.body.append(anchor)
-          anchor.click()
-          anchor.remove()
-
-          URL.revokeObjectURL(url)
-        })
-      message.success({ content: "Файл скачан", key: "downloadFile" })
-    } catch (error) {
-      message.error({ content: "Не удалось скачать файл", key: "downloadFile" })
-    }
+  const onCancel = () => {
+    dispatch(setDownloadLink(null))
   }
 
   return (
     <>
-      <div className={classes.container}>
-        <Upload.Dragger
-          fileList={fileList}
-          onChange={handleFileChange}
-          className={classes.upload}
-        >
-          <div className={classes["upload-wrapper"]}>
-            <div className={classes["upload-icon"]}>
-              <p>
-                <FileDoneOutlined />
-              </p>
+      <Typography.Title level={3} className={classes.title}>
+        Получение аналитики из файла
+      </Typography.Title>
+      <Typography className={classes.description}>
+        Загрузите необходимый файл шаблона для получения патентной аналитики
+      </Typography>
+      {!downloadLink ? (
+        <>
+          <Upload.Dragger
+            // action={`${SERVER_URL}/upload/`}
+            fileList={fileList}
+            onChange={handleFileChange}
+            className={classes.upload}
+            maxCount={1}
+            beforeUpload={(file, fileList) => {
+              // Access file content here and do something with it
+              // console.log(file)
+              // Prevent upload
+              return false
+            }}
+          >
+            <div className={classes["upload-wrapper"]}>
+              <div className={classes["upload-icon"]}>
+                <p>
+                  <FileDoneOutlined />
+                </p>
+              </div>
+              <div className={classes["upload-text-wrapper"]}>
+                <p className={classes["upload-text"]}>Приложите файл</p>
+                <p className={classes["upload-hint"]}>
+                  Нажмите на поле или перетащите в него файл
+                </p>
+                <p className={classes["upload-hint"]}>
+                  Допустимый формат: .xlsx
+                </p>
+              </div>
             </div>
-            <div>
-              <p className={classes["upload-text"]}>Приложите файл</p>
-              <p className={classes["upload-hint"]}>
-                Нажмите на поле или перетащите в него файл
-              </p>
-            </div>
-          </div>
-        </Upload.Dragger>
-
-        {downloadLink && (
-          <div className={classes.attachment}>
-            <Typography className={classes["attachment-title"]}>
-              Ссылка на готовый файл:
-            </Typography>
-            <div onClick={downloadFile}>
-              <Button className={classes.link}>Скачать файл</Button>
-            </div>
-          </div>
-        )}
-      </div>
-      <Button
-        disabled={!fileList.length}
-        onClick={handleUpload}
-        type="primary"
-        className={classes["upload-btn"]}
-      >
-        Загрузить
-      </Button>
+          </Upload.Dragger>
+          {!!fileList.length && (
+            <Button
+              disabled={!fileList.length}
+              onClick={onUpload}
+              type="primary"
+              className={classes["upload-btn"]}
+              icon={<UploadOutlined />}
+            >
+              Загрузить
+            </Button>
+          )}
+        </>
+      ) : (
+        <>
+          <Button
+            onClick={onCancel}
+            type="default"
+            className={classes["upload-btn"]}
+          >
+            Назад
+          </Button>
+          <Button
+            onClick={() => dispatch(downloadAnalyticsFile())}
+            type="primary"
+            className={classes["upload-btn"]}
+            icon={<UploadOutlined />}
+          >
+            Скачать
+          </Button>
+        </>
+      )}
     </>
   )
 }

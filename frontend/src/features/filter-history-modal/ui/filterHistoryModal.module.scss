@@ -1,0 +1,16 @@
+.title {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    color: var(--black);
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.description {
+    display: flex;
+    align-items: center;
+    color: var(--grey-600);
+    font-size: 1rem;
+    margin-bottom: 20px;
+}

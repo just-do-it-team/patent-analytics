@@ -1,34 +1,32 @@
-import moment from "moment"
+import moment, { Moment } from "moment"
 
+export const BACKEND_FORMAT = "YYYY-MM-DD"
 export const USER_DATE_FORMAT = "DD.MM.YYYY"
-export const USER_DATE_TIME_FORMAT = "DD.MM.YYYY HH:mm:ss"
-export const USER_DATE_TIME_FORMAT_MIN = "DD.MM.YYYY HH:mm"
-export const USER_TIME_FORMAT = "HH:mm"
-export const DAY_MONTH_FORMAT = "dddd, D MMMM"
-export const DAY_MONTH_YEAR_FORMAT = "D MMMM YYYY"
-export const MONTH_FORMAT = "D MMMM"
-export const BACKEND_DATE_FORMAT = "YYYY-MM-DD"
+export const USER_DATE_FORMAT_HOURS = "DD.MM.YYYY HH:MM"
 
 export const today = moment().format("YYYY-MM-DD")
 
-export const currentDay = [
-  moment().subtract(1, "d").format("YYYY-MM-DD"),
-  moment().format("YYYY-MM-DD"),
-]
-
-export const currentWeek = [
-  moment().subtract(1, "w").format("YYYY-MM-DD"),
-  today,
-]
-
-export const currentMonth = [
-  moment().subtract(1, "M").format("YYYY-MM-DD"),
-  today,
-]
+export function formatDateToBackend(date?: string): string {
+  return moment(date).format(BACKEND_FORMAT)
+}
 
 export function formatDateToString(date: string) {
   if (!date) {
     return ""
   }
   return moment(date).format(USER_DATE_FORMAT)
+}
+
+export function formatDateToStringWithHours(date: string) {
+  if (!date) {
+    return ""
+  }
+  return moment(date).format(USER_DATE_FORMAT_HOURS)
+}
+
+export function getDateToString(value: Moment[] | null) {
+  return {
+    startDate: value ? value[0].format(BACKEND_FORMAT) : "",
+    endDate: value ? value[1].format(BACKEND_FORMAT) : "",
+  }
 }

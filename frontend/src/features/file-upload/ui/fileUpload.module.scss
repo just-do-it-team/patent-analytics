@@ -1,58 +1,57 @@
-.container {
+
+.title {
+    margin: 0;
+}
+
+.description {
+    margin: 0 0 15px 0;
+    font-size: 1rem;
+}
+
+.upload {
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: white;
+}
+
+.upload-wrapper {
     display: flex;
-    align-items: center;
+    margin: 0 20px;
 
-    .upload {
-        width: 50%;
-        border-radius: 10px;
-        cursor: pointer;
-        background-color: white;
-    }
-
-    .attachment {
-        margin-left: 25px;
-
-        .attachment-title {
-            font-size: 1rem;
-            margin-bottom: 10px;
-        }
-
-        .link {
-            margin: 0 auto;
-            cursor: pointer;
-            color: #1890ff;
-        }
-    }
-
-    .upload-wrapper {
+    .upload-icon {
         display: flex;
-        margin: 0 20px;
+        justify-content: center;
+        align-items: center;
+        padding: 0 20px;
+        font-size: 1.8rem;
+        color: var(--active-color);
+    }
 
-        .upload-icon {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0 20px;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
+    .upload-text-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
 
         .upload-text {
             display: flex;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
+            margin: 0;
             font-weight: bold;
-            color: var(--primary-color);
+            color: var(--active-color);
         }
 
         .upload-hint {
             display: flex;
             font-size: 0.8rem;
+            margin: 0;
         }
     }
+
+
 }
+
 
 .upload-btn {
     margin: 25px 0 0 0;
-    width: 50%;
     height: 2.5rem;
 }
