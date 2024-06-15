@@ -13,6 +13,7 @@ import {
   getSelectedData,
 } from "@/entities/import/model/services/importServices"
 import { FilterHistoryDataType } from "@/entities/import/model/types/importSchema"
+import { getAnalyticsData } from "@/entities/analytics/model/services/analyticsService"
 
 export const FilterHistoryTable = memo(() => {
   const [page, setPage] = useState<number>(1)
@@ -44,9 +45,15 @@ export const FilterHistoryTable = memo(() => {
   }
 
   const onRowClick = (record: FilterHistoryDataType) => () => {
-    if (record) {
+    const pathName = window.location.href.split("/").filter(Boolean).pop()
+
+    if (record && pathName === "import") {
       dispatch(getSelectedData({ id: record.id! }))
       dispatch(openModal())
+    }
+
+    if (record && pathName === "visualization") {
+      dispatch(getAnalyticsData({ id: record.id! }))
     }
   }
 
