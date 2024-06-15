@@ -1,3 +1,12 @@
+export type AnalyticsDataType = {
+  time: string
+  sum: string
+}
+
 export type AnalyticsSchema = {
-  activeTab: string
+  analyticsData: {
+    data: AnalyticsDataType[]
+    isLoading: boolean
+    error: string | undefined | null
+  }
 }

@@ -11,7 +11,7 @@ export const useColumns = () => {
     },
 
     {
-      title: "Процент",
+      title: "Процент разметки",
       dataIndex: "percent",
       key: "percent",
       render: value => <span>{value} %</span>,
