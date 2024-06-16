@@ -1,4 +1,3 @@
-from import_export.formats.base_formats import XLSX
 from pathlib import Path
 import os
 
@@ -13,9 +12,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-h0#_jhq&t3)4%$t%_vg8$u0qe#e!&rzypqo254kc%ri#!bm1bd'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['78.36.74.22', '127.0.0.1']
+# ALLOWED_HOSTS = ['78.36.74.22', '127.0.0.1']
+ALLOWED_HOSTS = ['89.232.170.192', '127.0.0.1']
 
 
 # Application definition
@@ -45,12 +45,12 @@ MIDDLEWARE = [
 CORS_ALLOWED_HOSTS = [
     # 'http://localhost:5173',
     # 'http://127.0.0.1:5173',
-    'http://78.36.74.22',
+    'http://89.232.170.192',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     # 'http://localhost:5173',
-    'http://78.36.74.22',
+    'http://89.232.170.192',
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -86,7 +86,8 @@ DATABASES = {
         'NAME': 'patentdb',
         'USER': 'nemir4uk',
         'PASSWORD': '0RxJiyA)Pa3YTz9P+v9;Xnj',
-        'HOST': '89.232.170.192',
+        'HOST': 'localhost',
+        # 'HOST': '89.232.170.192',
         'PORT': '5432'
     }
 }
@@ -123,8 +124,9 @@ USE_I18N = True
 USE_TZ = True
 
 # пути к файлам для загрузки и скачивания с сервера (например путь до файла patent/xlsx/text.txt где patent это корневая папка проекта)
-MEDIA_URL = 'xlsx/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'xlsx/')
+
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'xlsx/')
+MEDIA_ROOT = "/var/www/patent/xlsx/"
 
 
 STATIC_URL = 'static/'
@@ -135,5 +137,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
 }
-
-IMPORT_EXPORT_FORMATS = [XLSX]
