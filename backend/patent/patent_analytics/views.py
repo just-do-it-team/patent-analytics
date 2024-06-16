@@ -4,11 +4,10 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import status
-from django.http import FileResponse, HttpRequest, JsonResponse
-from django.core.files import File
+from django.http import FileResponse, JsonResponse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from patent.settings import MEDIA_ROOT
+from patent.settings import MEDIA_ROOT, BASE_DIR
 from .models import Files, Reports, Invention_bd, Prom_bd, PModels_bd
 from .serializer import FilesSerializer, ReportsSerializer
 from .input_validation import validate_string, validate_list
@@ -16,6 +15,7 @@ from .bd_columns import prom_bd_excel, invention_bd_excel, pmodels_bd_excel
 import zipfile
 import datetime
 import random
+import os
 import pandas as pd
 
 
@@ -38,8 +38,105 @@ class Upload(APIView):
             processed_file_path = default_storage.save(processed_file_name, ContentFile(processed_content))
             processed_files.append(processed_file_path)
         ################################ запрос в базу по ИНН и другим полям
-        ################################# запись в модель
-        percent = 0
+        df = pd.read_excel(os.path.join(BASE_DIR, 'xlsx/' + processed_file_name))
+        inn_list = df['inn'].dropna()
+        query = Invention_bd.objects.filter(inn__in=inn_list).values_list(
+            'registration_number', 'registration_date', 'application_number',
+            'application_date', 'authors', 'authors_latin', 'patent_holders', 'patent_holders_latin',
+            'correspondence_address', 'correspondence_address_latin', 'invention_name',
+            'patent_starting_date', 'crimean_invention_application_number', 'crimean_invention_application_date',
+            'crimean_invention_patent_number_in_ukraine',
+            'receipt_date_of_additional_data_to_application',
+            'date_of_application_to_wich_additional_data_has_been_received',
+            'number_of_application_to_wich_additional_data_has_been_received', 'initial_application_number',
+            'initial_application_date',
+            'initial_application_priority_date', 'previous_application_number', 'previous_application_date',
+            'paris_convention_priority_number',
+            'paris_convention_priority_date', 'paris_convention_priority_country',
+            'pct_application_examination_start_date', 'pct_application_number',
+            'pct_application_date', 'pct_application_publish_number', 'pct_application_publish_date',
+            'ea_application_number',
+            'ea_application_date', 'ea_application_publish_number', 'ea_application_publish_date',
+            'application_publish_date',
+            'application_publish_number', 'patent_grant_publish_date', 'patent_grant_publish_number',
+            'revoke_patent_number',
+            'information_about_the_obligation', 'expiration_date',
+            'invention_formula_numbers_for_which_patent_term_is_prolonged',
+            'additional_patent', 'actual', 'mpk', 'unnamed_46', 'unnamed_47', 'unnamed_48', 'head_or_branch',
+            'id_child', 'inn', 'is_active',
+            'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
+        query2 = PModels_bd.objects.filter(inn__in=inn_list).values_list(
+            'registration_number',
+            'registration_date',
+            'application_number',
+            'application_date', 'authors',
+            'authors_latin', 'patent_holders',
+            'patent_holders_latin',
+            'correspondence_address',
+            'correspondence_address_latin',
+            'utility_model_name',
+            'patent_starting_date',
+            'crimean_utility_application_number',
+            'crimean_utility_application_date',
+            'crimean_utility_patent_number_in_ukraine',
+            'receipt_date_of_additional_data_to_application',
+            'date_of_application_to_wich_additional_data_has_been_received',
+            'number_of_application_to_wich_additional_data_has_been_received',
+            'initial_application_number',
+            'initial_application_date',
+            'initial_application_priority_date',
+            'previous_application_number',
+            'previous_application_date',
+            'paris_convention_priority_number',
+            'paris_convention_priority_date',
+            'paris_convention_priority_country',
+            'pct_application_examination_start_date',
+            'pct_application_number',
+            'pct_application_date',
+            'pct_application_publish_number',
+            'pct_application_publish_date',
+            'patent_grant_publish_date',
+            'patent_grant_publish_number',
+            'revoke_patent_number',
+            'expiration_date',
+            'utility_formula_numbers_for_which_patent_term_is_prolonged',
+            'actual', 'publication_url', 'mpk',
+            'unnamed_39', 'unnamed_40',
+            'head_or_branch', 'id_child', 'inn',
+            'is_active', 'ogrn',
+            'okopf', 'okopf_code', 'okfs',
+            'okfs_code')
+        query3 = Prom_bd.objects.filter(inn__in=inn_list).values_list(
+            'registration_number', 'registration_date', 'application_number', 'application_date', 'authors',
+            'authors_latin', 'patent_holders',
+            'patent_holders_latin', 'correspondence_address', 'correspondence_address_latin', 'industrial_design_name',
+            'patent_starting_date',
+            'crimean_industrial_design_application_number', 'crimean_industrial_design_application_date',
+            'crimean_industrial_design_patent_number_in_ukraine', 'receipt_date_of_additional_data_to_application',
+            'date_of_application_to_wich_additional_data_has_been_received',
+            'number_of_application_to_wich_additional_data_has_been_received',
+            'initial_application_number', 'initial_application_date', 'initial_application_priority_date',
+            'previous_application_number', 'previous_application_date',
+            'paris_convention_priority_number', 'paris_convention_priority_date', 'paris_convention_priority_country',
+            'patent_grant_publish_date', 'patent_grant_publish_number', 'revoke_patent_number',
+            'expiration_date', 'numbers_of_list_of_essential_features', 'industrial_designs_names_and_number',
+            'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active',
+            'ogrn',
+            'okopf', 'okopf_code', 'okfs', 'okfs_code')
+        df = pd.DataFrame(list(query), columns=invention_bd_excel())
+        df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
+        df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
+        df = pd.concat([df, df2, df3])
+        df['registration date'] = pd.to_datetime(df['registration date'])
+        df['expiration date'] = pd.to_datetime(df['expiration date'])
+        df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
+        df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
+        name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
+        processed_file_name = f'{name_suffix}.xlsx'
+        path_to_file = os.path.join(BASE_DIR, 'xlsx/' + processed_file_name)
+        found_inn = df['inn'].nunique()
+        percent = round(len(inn_list)/ (found_inn+1))
+        df.to_excel(path_to_file)
         Files.objects.create(file=processed_file_name, percent=percent)
         return Response({"processed_files": f'{processed_file_name}'}, status=status.HTTP_200_OK)
 
@@ -47,7 +144,8 @@ class Upload(APIView):
     #функция для скачивания файла с сервера (например file_path = 'xlsx/text.txt') папка см комментарий к MEDIA_ROOT
     def get(self, request):
         filename = Files.objects.order_by("-id").values('file')[0]
-        file_path = 'xlsx/' + filename['file']
+        file_path = os.path.join(BASE_DIR, 'xlsx/' + filename['file'])
+        # file_path = 'xlsx/' + filename['file']
         response = FileResponse(open(file_path, 'rb'))
         return response
 
@@ -58,20 +156,21 @@ class File_history_get_file(APIView):
         ids = body.get('ids')
         if len(ids) == 1:
             filename = Files.objects.filter(id__in=ids).values('id', 'file')[0]
-            # filename = Files.objects.get(id=ids[0]).values('id', 'file')
-            file_path = 'xlsx/' + filename['file']
+            file_path = os.path.join(BASE_DIR, 'xlsx/' + filename['file'])
+            # file_path = 'xlsx/' + filename['file']
             response = FileResponse(open(file_path, 'rb'))
             return response
         elif len(ids) > 1:
             filenames = Files.objects.filter(id__in=ids).values('id', 'file')
             file_list = []
             for file in filenames:
-                file_list.append(pd.read_excel(str('xlsx/' + file['file'])))
+                file_list.append(pd.read_excel(str(os.path.join(BASE_DIR, 'xlsx/' + file['file']))))
             endfile = pd.concat(file_list, ignore_index=True)
             endfile = endfile.drop_duplicates(subset=['registration number'])
             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0,100))
-            endfile.to_excel(f'{MEDIA_ROOT}{name_suffix}.xlsx')
-            response = FileResponse(open(f'{MEDIA_ROOT}{name_suffix}.xlsx', 'rb'))
+            filename = f'{MEDIA_ROOT}{name_suffix}.xlsx'
+            endfile.to_excel(filename)
+            response = FileResponse(open(filename, 'rb'))
             return response
 
 class File_history(ListAPIView):
@@ -132,11 +231,13 @@ class Report(APIView):
                                                'additional_patent', 'actual', 'mpk', 'unnamed_46', 'unnamed_47', 'unnamed_48', 'head_or_branch', 'id_child', 'inn', 'is_active',
                                                 'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
                                     df = pd.DataFrame(list(query), columns=invention_bd_excel())
+                                    df['registration date'] = pd.to_datetime(df['registration date'])
+                                    df['expiration date'] = pd.to_datetime(df['expiration date'])
                                     df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                     df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                     name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                     filename = f'{name_suffix}.xlsx'
-                                    path_to_file = f'reports/{filename}'
+                                    path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                     Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                            prom_bd=prom_bd,
                                                            start_date=start_date, end_date=end_date, inn=inn,
@@ -168,11 +269,13 @@ class Report(APIView):
                                           'unnamed_46', 'unnamed_47', 'unnamed_48', 'head_or_branch', 'id_child', 'inn', 'is_active',
                                           'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -201,11 +304,13 @@ class Report(APIView):
                                            'additional_patent', 'actual', 'mpk', 'unnamed_46', 'unnamed_47', 'unnamed_48', 'head_or_branch', 'id_child', 'inn', 'is_active',
                                             'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -236,11 +341,13 @@ class Report(APIView):
                                       'unnamed_46', 'unnamed_47', 'unnamed_48', 'head_or_branch', 'id_child', 'inn', 'is_active',
                                       'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -304,11 +411,13 @@ class Report(APIView):
                                                                                   'ogrn', 'okfs', 'okfs_code',
                                                                                   'okopf', 'okopf_code')
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -350,11 +459,13 @@ class Report(APIView):
                                 'is_active',
                                 'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -384,11 +495,13 @@ class Report(APIView):
                                                   'additional_patent', 'actual', 'mpk', 'unnamed_46', 'unnamed_47', 'unnamed_48', 'head_or_branch',
                                                   'id_child', 'inn', 'is_active', 'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn,
@@ -428,11 +541,13 @@ class Report(APIView):
                             'is_active',
                             'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
                         df = pd.DataFrame(list(query), columns=invention_bd_excel())
+                        df['registration date'] = pd.to_datetime(df['registration date'])
+                        df['expiration date'] = pd.to_datetime(df['expiration date'])
                         df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                         df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                         name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                         filename = f'{name_suffix}.xlsx'
-                        path_to_file = f'reports/{filename}'
+                        path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                         Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                prom_bd=prom_bd,
                                                start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -479,11 +594,13 @@ class Report(APIView):
                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                     'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                     df = pd.DataFrame(list(query), columns=pmodels_bd_excel())
+                                    df['registration date'] = pd.to_datetime(df['registration date'])
+                                    df['expiration date'] = pd.to_datetime(df['expiration date'])
                                     df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                     df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                     name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                     filename = f'{name_suffix}.xlsx'
-                                    path_to_file = f'reports/{filename}'
+                                    path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                     Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                            prom_bd=prom_bd,
                                                            start_date=start_date, end_date=end_date, inn=inn,
@@ -523,11 +640,13 @@ class Report(APIView):
                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                     'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=pmodels_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -569,11 +688,13 @@ class Report(APIView):
                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                     'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=pmodels_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -612,11 +733,13 @@ class Report(APIView):
                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                     'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=pmodels_bd_excel())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -661,11 +784,13 @@ class Report(APIView):
                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                     'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=pmodels_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -704,17 +829,17 @@ class Report(APIView):
                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                     'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=pmodels_bd_excel())
-                            # print(df.info())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
                                                    okopf_code=okopf_code, file=filename)
-                            print(df.info())
                             df.to_excel(path_to_file)
                             return FileResponse(open(path_to_file, 'rb'))
                     else:
@@ -750,11 +875,13 @@ class Report(APIView):
                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                     'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=pmodels_bd_excel())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn,
@@ -792,11 +919,13 @@ class Report(APIView):
                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                     'okopf', 'okopf_code', 'okfs', 'okfs_code')
                         df = pd.DataFrame(list(query), columns=pmodels_bd_excel())
+                        df['registration date'] = pd.to_datetime(df['registration date'])
+                        df['expiration date'] = pd.to_datetime(df['expiration date'])
                         df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                         df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                         name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                         filename = f'{name_suffix}.xlsx'
-                        path_to_file = f'reports/{filename}'
+                        path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                         Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                prom_bd=prom_bd,
                                                start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -830,12 +959,14 @@ class Report(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                     df = pd.DataFrame(list(query), columns=prom_bd_excel())
+                                    df['registration date'] = pd.to_datetime(df['registration date'])
+                                    df['expiration date'] = pd.to_datetime(df['expiration date'])
                                     df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                     df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                     name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                         random.randint(0, 100))
                                     filename = f'{name_suffix}.xlsx'
-                                    path_to_file = f'reports/{filename}'
+                                    path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                     Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                            prom_bd=prom_bd,
                                                            start_date=start_date, end_date=end_date, inn=inn,
@@ -862,12 +993,14 @@ class Report(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=prom_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                     random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -896,12 +1029,14 @@ class Report(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=prom_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                     random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -927,11 +1062,13 @@ class Report(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=prom_bd_excel())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -963,12 +1100,14 @@ class Report(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=prom_bd_excel())
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                     random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -994,12 +1133,14 @@ class Report(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=prom_bd_excel())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -1026,12 +1167,14 @@ class Report(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=prom_bd_excel())
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn,
@@ -1056,11 +1199,13 @@ class Report(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn',
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                         df = pd.DataFrame(list(query), columns=prom_bd_excel())
+                        df['registration date'] = pd.to_datetime(df['registration date'])
+                        df['expiration date'] = pd.to_datetime(df['expiration date'])
                         df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                         df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                         name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                         filename = f'{name_suffix}.xlsx'
-                        path_to_file = f'reports/{filename}'
+                        path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                         Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                prom_bd=prom_bd,
                                                start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -1138,11 +1283,13 @@ class Report(APIView):
                                     df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                     df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                                     df = pd.concat([df, df2])
+                                    df['registration date'] = pd.to_datetime(df['registration date'])
+                                    df['expiration date'] = pd.to_datetime(df['expiration date'])
                                     df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                     df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                     name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                     filename = f'{name_suffix}.xlsx'
-                                    path_to_file = f'reports/{filename}'
+                                    path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                     Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                            prom_bd=prom_bd,
                                                            start_date=start_date, end_date=end_date, inn=inn,
@@ -1214,11 +1361,13 @@ class Report(APIView):
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                                 df = pd.concat([df, df2])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -1292,11 +1441,13 @@ class Report(APIView):
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                                 df = pd.concat([df, df2])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -1366,11 +1517,13 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -1446,12 +1599,14 @@ class Report(APIView):
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                                 df = pd.concat([df, df2])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                     random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -1522,12 +1677,14 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -1599,12 +1756,14 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn,
@@ -1672,11 +1831,13 @@ class Report(APIView):
                         df = pd.DataFrame(list(query), columns=invention_bd_excel())
                         df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                         df = pd.concat([df,df2])
+                        df['registration date'] = pd.to_datetime(df['registration date'])
+                        df['expiration date'] = pd.to_datetime(df['expiration date'])
                         df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                         df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                         name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                         filename = f'{name_suffix}.xlsx'
-                        path_to_file = f'reports/{filename}'
+                        path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                         Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                prom_bd=prom_bd,
                                                start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -1684,7 +1845,7 @@ class Report(APIView):
                         df.to_excel(path_to_file)
                         return FileResponse(open(path_to_file, 'rb'))
 ############################ 5)
-        elif invention_bd and pmodels_bd and not prom_bd:
+        elif not invention_bd and pmodels_bd and prom_bd:
             if inn is not None:  # 1
                 if validate_string(inn):
                     if okopf is not None:  # 2
@@ -1755,11 +1916,13 @@ class Report(APIView):
                                     df = pd.DataFrame(list(query), columns=prom_bd_excel())
                                     df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                                     df = pd.concat([df, df2])
+                                    df['registration date'] = pd.to_datetime(df['registration date'])
+                                    df['expiration date'] = pd.to_datetime(df['expiration date'])
                                     df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                     df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                     name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                     filename = f'{name_suffix}.xlsx'
-                                    path_to_file = f'reports/{filename}'
+                                    path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                     Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                            prom_bd=prom_bd,
                                                            start_date=start_date, end_date=end_date, inn=inn,
@@ -1830,11 +1993,13 @@ class Report(APIView):
                                 df = pd.DataFrame(list(query), columns=prom_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                                 df = pd.concat([df, df2])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -1912,7 +2077,7 @@ class Report(APIView):
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -1981,11 +2146,13 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=prom_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -2061,12 +2228,14 @@ class Report(APIView):
                                 df = pd.DataFrame(list(query), columns=prom_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                                 df = pd.concat([df, df2])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                     random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -2136,12 +2305,14 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=prom_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -2213,12 +2384,14 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=prom_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn,
@@ -2285,11 +2458,13 @@ class Report(APIView):
                         df = pd.DataFrame(list(query), columns=prom_bd_excel())
                         df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
                         df = pd.concat([df, df2])
+                        df['registration date'] = pd.to_datetime(df['registration date'])
+                        df['expiration date'] = pd.to_datetime(df['expiration date'])
                         df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                         df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                         name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                         filename = f'{name_suffix}.xlsx'
-                        path_to_file = f'reports/{filename}'
+                        path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                         Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                prom_bd=prom_bd,
                                                start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -2339,11 +2514,13 @@ class Report(APIView):
                                     df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                     df2 = pd.DataFrame(list(query2), columns=prom_bd_excel())
                                     df = pd.concat([df, df2])
+                                    df['registration date'] = pd.to_datetime(df['registration date'])
+                                    df['expiration date'] = pd.to_datetime(df['expiration date'])
                                     df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                     df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                     name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                     filename = f'{name_suffix}.xlsx'
-                                    path_to_file = f'reports/{filename}'
+                                    path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                     Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                            prom_bd=prom_bd,
                                                            start_date=start_date, end_date=end_date, inn=inn,
@@ -2386,11 +2563,13 @@ class Report(APIView):
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=prom_bd_excel())
                                 df = pd.concat([df, df2])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -2435,11 +2614,13 @@ class Report(APIView):
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=prom_bd_excel())
                                 df = pd.concat([df, df2])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -2480,11 +2661,13 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=prom_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -2531,12 +2714,14 @@ class Report(APIView):
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=prom_bd_excel())
                                 df = pd.concat([df, df2])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                     random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -2578,12 +2763,14 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=prom_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -2626,12 +2813,14 @@ class Report(APIView):
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=prom_bd_excel())
                             df = pd.concat([df, df2])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn,
@@ -2670,11 +2859,13 @@ class Report(APIView):
                         df = pd.DataFrame(list(query), columns=invention_bd_excel())
                         df2 = pd.DataFrame(list(query2), columns=prom_bd_excel())
                         df = pd.concat([df,df2])
+                        df['registration date'] = pd.to_datetime(df['registration date'])
+                        df['expiration date'] = pd.to_datetime(df['expiration date'])
                         df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                         df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                         name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                         filename = f'{name_suffix}.xlsx'
-                        path_to_file = f'reports/{filename}'
+                        path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                         Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                prom_bd=prom_bd,
                                                start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -2682,7 +2873,7 @@ class Report(APIView):
                         df.to_excel(path_to_file)
                         return FileResponse(open(path_to_file, 'rb'))
 ######################### 7)
-        elif invention_bd and pmodels_bd and not prom_bd:
+        elif invention_bd and pmodels_bd and prom_bd:
             if inn is not None: #1
                 if validate_string(inn):
                     if okopf is not None: #2
@@ -2767,13 +2958,15 @@ class Report(APIView):
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                     df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                     df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
-                                    df3 = pd.Dataframe(list(query3), columns=prom_bd_excel())
+                                    df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
                                     df = pd.concat([df, df2, df3])
+                                    df['registration date'] = pd.to_datetime(df['registration date'])
+                                    df['expiration date'] = pd.to_datetime(df['expiration date'])
                                     df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                     df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                     name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                     filename = f'{name_suffix}.xlsx'
-                                    path_to_file = f'reports/{filename}'
+                                    path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                     Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                            prom_bd=prom_bd,
                                                            start_date=start_date, end_date=end_date, inn=inn,
@@ -2858,13 +3051,15 @@ class Report(APIView):
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
-                                df3 = pd.Dataframe(list(query3), columns=prom_bd_excel())
+                                df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
                                 df = pd.concat([df, df2, df3])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -2952,13 +3147,15 @@ class Report(APIView):
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
-                                df3 = pd.Dataframe(list(query3), columns=prom_bd_excel())
+                                df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
                                 df = pd.concat([df, df2, df3])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -3040,13 +3237,15 @@ class Report(APIView):
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
-                            df3 = pd.Dataframe(list(query3), columns=prom_bd_excel())
+                            df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
                             df = pd.concat([df, df2, df3])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -3136,14 +3335,16 @@ class Report(APIView):
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                                 df = pd.DataFrame(list(query), columns=invention_bd_excel())
                                 df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
-                                df3 = pd.Dataframe(list(query3), columns=prom_bd_excel())
+                                df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
                                 df = pd.concat([df, df2, df3])
+                                df['registration date'] = pd.to_datetime(df['registration date'])
+                                df['expiration date'] = pd.to_datetime(df['expiration date'])
                                 df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                                 df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                                 name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                     random.randint(0, 100))
                                 filename = f'{name_suffix}.xlsx'
-                                path_to_file = f'reports/{filename}'
+                                path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                                 Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                        prom_bd=prom_bd,
                                                        start_date=start_date, end_date=end_date, inn=inn,
@@ -3226,14 +3427,16 @@ class Report(APIView):
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
-                            df3 = pd.Dataframe(list(query3), columns=prom_bd_excel())
+                            df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
                             df = pd.concat([df, df2, df3])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -3318,14 +3521,16 @@ class Report(APIView):
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                             df = pd.DataFrame(list(query), columns=invention_bd_excel())
                             df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
-                            df3 = pd.Dataframe(list(query3), columns=prom_bd_excel())
+                            df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
                             df = pd.concat([df, df2, df3])
+                            df['registration date'] = pd.to_datetime(df['registration date'])
+                            df['expiration date'] = pd.to_datetime(df['expiration date'])
                             df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                             df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                             name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(
                                 random.randint(0, 100))
                             filename = f'{name_suffix}.xlsx'
-                            path_to_file = f'reports/{filename}'
+                            path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                             Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                    prom_bd=prom_bd,
                                                    start_date=start_date, end_date=end_date, inn=inn,
@@ -3404,13 +3609,15 @@ class Report(APIView):
                                              'okopf', 'okopf_code', 'okfs', 'okfs_code')
                         df = pd.DataFrame(list(query), columns=invention_bd_excel())
                         df2 = pd.DataFrame(list(query2), columns=pmodels_bd_excel())
-                        df3 = pd.Dataframe(list(query3), columns=prom_bd_excel())
+                        df3 = pd.DataFrame(list(query3), columns=prom_bd_excel())
+                        df['registration date'] = pd.to_datetime(df['registration date'])
+                        df['expiration date'] = pd.to_datetime(df['expiration date'])
                         df = pd.concat([df, df2, df3])
                         df['registration date'] = df['registration date'].dt.strftime('%Y-%m-%d')
                         df['expiration date'] = df['expiration date'].dt.strftime('%Y-%m-%d')
                         name_suffix = '{:%Y%m%d}'.format(datetime.datetime.today()) + str(random.randint(0, 100))
                         filename = f'{name_suffix}.xlsx'
-                        path_to_file = f'reports/{filename}'
+                        path_to_file = os.path.join(BASE_DIR, 'reports/' + filename)
                         Reports.objects.create(invention_bd=invention_bd, pmodels_bd=pmodels_bd,
                                                prom_bd=prom_bd,
                                                start_date=start_date, end_date=end_date, inn=inn, okopf=okopf,
@@ -3422,7 +3629,7 @@ class Filter_history_report(APIView):
     def get(self, request):
         file_id = self.request.query_params.get('id')
         filename = Reports.objects.filter(id__in=file_id).values('id', 'file')[0]
-        file_path = 'reports/' + filename['file']
+        file_path = os.path.join(BASE_DIR, 'reports/' + filename['file'])
         response = FileResponse(open(file_path, 'rb'))
         return response
 
@@ -3441,8 +3648,10 @@ class ReportGetBD(APIView):
                                              'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn', 'okfs', 'okfs_code',
                                              'okopf', 'okopf_code')
         df1 = pd.DataFrame(list(query1), columns=prom_bd_excel())
-        # df1['registration date'] = df1['registration date'].dt.date
-        # df1['expiration date'] = df1['expiration date'].dt.date
+        df1['registration date'] = pd.to_datetime(df1['registration date'])
+        df1['expiration date'] = pd.to_datetime(df1['expiration date'])
+        df1['registration date'] = df1['registration date'].dt.date
+        df1['expiration date'] = df1['expiration date'].dt.date
         query2 = Invention_bd.objects.all().values_list('registration_number', 'registration_date', 'application_number',
                                                        'application_date', 'authors', 'authors_latin', 'patent_holders',
                                                        'patent_holders_latin', 'correspondence_address',
@@ -3469,6 +3678,8 @@ class ReportGetBD(APIView):
                                                        'unnamed_48', 'head_or_branch', 'id_child', 'inn', 'is_active',
                                                         'ogrn', 'okfs', 'okfs_code', 'okopf', 'okopf_code')
         df2 = pd.DataFrame(list(query2), columns=invention_bd_excel())
+        df2['registration date'] = pd.to_datetime(df2['registration date'])
+        df2['expiration date'] = pd.to_datetime(df2['expiration date'])
         df2['registration date'] = df2['registration date'].dt.date
         df2['expiration date'] = df2['expiration date'].dt.date
         query3 = PModels_bd.objects.all().values_list('registration_number', 'registration_date', 'application_number',
@@ -3493,19 +3704,21 @@ class ReportGetBD(APIView):
                                                       'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn', 'okfs',
                                                       'okfs_code', 'okopf', 'okopf_code')
         df3 = pd.DataFrame(list(query3), columns=pmodels_bd_excel())
+        df3['registration date'] = pd.to_datetime(df3['registration date'])
+        df3['expiration date'] = pd.to_datetime(df3['expiration date'])
         df3['registration date'] = df3['registration date'].dt.date
         df3['expiration date'] = df3['expiration date'].dt.date
-        path_to_file1 = 'full_bd/Prom_bd.xlsx'
+        path_to_file1 = os.path.join(BASE_DIR, 'full_bd/Prom_bd.xlsx')
         df1.to_excel(path_to_file1)
-        path_to_file2 = 'full_bd/Invention_bd.xlsx'
+        path_to_file2 = os.path.join(BASE_DIR, 'full_bd/Invention_bd.xlsx')
         df2.to_excel(path_to_file2)
-        path_to_file3 = 'full_bd/PModels_bd.xlsx'
+        path_to_file3 = os.path.join(BASE_DIR, 'full_bd/PModels_bd.xlsx')
         df3.to_excel(path_to_file3)
-        zip_path = "full_bd/Вся база патентов.zip"
+        zip_path = os.path.join(BASE_DIR, "full_bd/Вся база патентов.zip")
         with zipfile.ZipFile(zip_path, mode='w') as archive:
-            archive.write('full_bd/Prom_bd.xlsx')
-            archive.write('full_bd/Invention_bd.xlsx')
-            archive.write('full_bd/PModels_bd.xlsx')
+            archive.write(os.path.join(BASE_DIR, 'full_bd/Prom_bd.xlsx'))
+            archive.write(os.path.join(BASE_DIR, 'full_bd/Invention_bd.xlsx'))
+            archive.write(os.path.join(BASE_DIR, 'full_bd/PModels_bd.xlsx'))
         response = FileResponse(open(zip_path, 'rb'))
         return response
 
@@ -3515,7 +3728,7 @@ class Visualisation(APIView): # Сделать этот метод эффект�
         if report_id is not None:
             reports_query = Reports.objects.get(id=report_id)
             serializer = ReportsSerializer(reports_query)
-            file_path = 'reports/' + serializer.data['file']
+            file_path = os.path.join(BASE_DIR, 'reports/' + serializer.data['file'])
             df = pd.read_excel(file_path)
             df['registration date'] = pd.to_datetime(df['registration date'])
             df['YearMonth'] = df['registration date'].map(lambda dt: dt.replace(day=1))
