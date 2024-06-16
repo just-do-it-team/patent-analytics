@@ -16,7 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from patent_analytics import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    path('upload/', views.Upload.as_view(), name='file-upload'),
+    path('download/', views.Upload.as_view(), name='download'),
+    path('file_history/', views.File_history.as_view()),
+    path('file_history_get_file/', views.File_history_get_file.as_view()),
+    path('report/', views.Report.as_view()),
+    path('filter_history/', views.Report_history.as_view()),
+    path('filter_history_view/', views.Filter_history_view.as_view()),
+    path('filter_history_report/', views.Filter_history_report.as_view()),
+    path('full_report/', views.ReportGetBD.as_view()),
+    path('visualisation/', views.Visualisation.as_view()),
 ]
