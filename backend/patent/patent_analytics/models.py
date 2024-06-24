@@ -75,7 +75,7 @@ class Invention_bd(models.Model):
     okfs = models.CharField(max_length=500, blank=True, null=True) #
     is_active = models.CharField(max_length=10, blank=True, null=True)
     id_child = models.CharField(max_length=100, blank=True, null=True)
-    individual = models.BigIntegerField(blank=True, null=True)
+    individual = models.CharField(max_length=100, blank=True, null=True)
 
 class PModels_bd(models.Model):
     registration_number = models.CharField(max_length=10, blank=True, null=True)
@@ -128,7 +128,7 @@ class PModels_bd(models.Model):
     okfs = models.CharField(max_length=500, blank=True, null=True) #
     is_active = models.CharField(max_length=10, blank=True, null=True)
     id_child = models.CharField(max_length=100, blank=True, null=True)
-    individual = models.BigIntegerField(blank=True, null=True)
+    individual = models.CharField(max_length=100, blank=True, null=True)
 
 class Prom_bd(models.Model):
     registration_number = models.CharField(max_length=10, blank=True, null=True)
@@ -176,33 +176,33 @@ class Prom_bd(models.Model):
     okfs = models.CharField(max_length=500, blank=True, null=True) #
     is_active = models.CharField(max_length=10, blank=True, null=True)
     id_child = models.CharField(max_length=100, blank=True, null=True)
-    individual = models.BigIntegerField(blank=True, null=True)
+    individual = models.CharField(max_length=100, blank=True, null=True)
 
-# class Orgs(models.Model):
-#     id_company = models.IntegerField(blank=True, null=True)
-#     full_name = models.CharField(max_length=500, blank=True, null=True)
-#     short_name = models.CharField(max_length=500, blank=True, null=True)
-#     inn = models.CharField(max_length=20, blank=True, null=True)
-#     yr_address = models.CharField(max_length=500, blank=True, null=True)
-#     real_address = models.CharField(max_length=500, blank=True, null=True)
-#     ogrn = models.CharField(max_length=20, blank=True, null=True)
-#     head_or_branch = models.PositiveSmallIntegerField(blank=True, null=True)
-#     kpp = models.CharField(max_length=50, blank=True, null=True) #???
-#     okopf_code = models.CharField(max_length=50, blank=True, null=True) #
-#     okopf = models.CharField(max_length=500, blank=True, null=True) #
-#     okvad2 = models.CharField(max_length=500, blank=True, null=True) #
-#     okvad2_full = models.CharField(max_length=2000, blank=True, null=True) #
-#     creation_time = models.CharField(max_length=23, blank=True, null=True) #
-#     egrul_status = models.CharField(max_length=500, blank=True, null=True) #
-#     okfs_code = models.CharField(max_length=50, blank=True, null=True) #
-#     okfs = models.CharField(max_length=500, blank=True, null=True) #
-#     is_active = models.CharField(max_length=10, blank=True, null=True)
-#     id_child = models.CharField(max_length=100, blank=True, null=True)
-#     tel_SPARK = models.CharField(max_length=50000, blank=True, null=True) #
-#     site = models.CharField(max_length=5000, blank=True, null=True) #
-#     principal = models.CharField(max_length=500, blank=True, null=True)
-#     position = models.CharField(max_length=1000, blank=True, null=True) #
-#     okvad2_add = models.CharField(max_length=25000, blank=True, null=True) #
+class Orgs(models.Model):
+    id_company = models.IntegerField(blank=True, null=True)
+    full_name = models.CharField(max_length=500, blank=True, null=True)
+    short_name = models.CharField(max_length=500, blank=True, null=True)
+    inn = models.CharField(max_length=20, blank=True, null=True)
+    yr_address = models.CharField(max_length=500, blank=True, null=True)
+    real_address = models.CharField(max_length=500, blank=True, null=True)
+    ogrn = models.CharField(max_length=20, blank=True, null=True)
+    head_or_branch = models.PositiveSmallIntegerField(blank=True, null=True)
+    kpp = models.CharField(max_length=50, blank=True, null=True) #???
+    okopf_code = models.CharField(max_length=50, blank=True, null=True) #
+    okopf = models.CharField(max_length=500, blank=True, null=True) #
+    okvad2 = models.CharField(max_length=500, blank=True, null=True) #
+    okvad2_full = models.CharField(max_length=2000, blank=True, null=True) #
+    creation_time = models.CharField(max_length=23, blank=True, null=True) #
+    egrul_status = models.CharField(max_length=500, blank=True, null=True) #
+    okfs_code = models.CharField(max_length=50, blank=True, null=True) #
+    okfs = models.CharField(max_length=500, blank=True, null=True) #
+    is_active = models.CharField(max_length=10, blank=True, null=True)
+    id_child = models.CharField(max_length=100, blank=True, null=True)
+    tel_SPARK = models.CharField(max_length=50000, blank=True, null=True) #
+    site = models.CharField(max_length=5000, blank=True, null=True) #
+    principal = models.CharField(max_length=500, blank=True, null=True)
+    position = models.CharField(max_length=1000, blank=True, null=True) #
+    okvad2_add = models.CharField(max_length=25000, blank=True, null=True) #
 
 class Files(models.Model):
     file = models.CharField(max_length=500)
