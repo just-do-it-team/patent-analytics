@@ -39,7 +39,7 @@ class Upload(APIView):
             processed_files.append(processed_file_path)
         ################################ запрос в базу по ИНН и другим полям
         df = pd.read_excel(os.path.join(BASE_DIR, 'xlsx/' + processed_file_name))
-        inn_list = df['inn'].dropna()
+        inn_list = df['ИНН'].dropna()
         query = Invention_bd.objects.filter(inn__in=inn_list).values_list(
             'registration_number', 'registration_date', 'application_number',
             'application_date', 'authors', 'authors_latin', 'patent_holders', 'patent_holders_latin',
@@ -3673,61 +3673,110 @@ class ReportGetBD(APIView):
         df2['expiration date'] = pd.to_datetime(df2['expiration date'])
         df2['registration date'] = df2['registration date'].dt.date
         df2['expiration date'] = df2['expiration date'].dt.date
-        path_to_file2 = os.path.join(BASE_DIR, 'full_bd/База по изобретениям.csv')
-        df2.to_csv(path_to_file2, index=False)
+        path_to_file2 = os.path.join(BASE_DIR, 'full_bd/База по изобретениям.xlsx')
+        import xlsxwriter
+        workbook = xlsxwriter.Workbook(path_to_file2, {'constant_memory': True, 'strings_to_urls': False})
+        worksheet1 = workbook.add_worksheet()
+        columns = invention_bd_excel()
+        for col in range(len(columns)):
+            worksheet1.write(0, col, columns[col])
+        for row in range(1, len(df2) + 1):
+            for col in range(0, len(df2.columns)):
+                try:
+                    worksheet1.write(row, col, df2.iloc[row, col])
+                except:
+                    worksheet1.write(row, col, '')
+        workbook.close()
+        query1 = Prom_bd.objects.all().values_list('registration_number', 'registration_date', 'application_number',
+                                                   'application_date', 'authors', 'authors_latin', 'patent_holders',
+                                                   'patent_holders_latin', 'correspondence_address',
+                                                   'correspondence_address_latin', 'industrial_design_name',
+                                                   'patent_starting_date',
+                                                   'crimean_industrial_design_application_number',
+                                                   'crimean_industrial_design_application_date',
+                                                   'crimean_industrial_design_patent_number_in_ukraine',
+                                                   'receipt_date_of_additional_data_to_application',
+                                                   'date_of_application_to_wich_additional_data_has_been_received',
+                                                   'number_of_application_to_wich_additional_data_has_been_received',
+                                                   'initial_application_number', 'initial_application_date',
+                                                   'initial_application_priority_date', 'previous_application_number',
+                                                   'previous_application_date',
+                                                   'paris_convention_priority_number', 'paris_convention_priority_date',
+                                                   'paris_convention_priority_country',
+                                                   'patent_grant_publish_date', 'patent_grant_publish_number',
+                                                   'revoke_patent_number',
+                                                   'expiration_date', 'numbers_of_list_of_essential_features',
+                                                   'industrial_designs_names_and_number',
+                                                   'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch',
+                                                   'id_child', 'inn', 'is_active', 'ogrn', 'okfs', 'okfs_code',
+                                                   'okopf', 'okopf_code')
+        df1 = pd.DataFrame(list(query1), columns=prom_bd_excel())
+        df1['registration date'] = pd.to_datetime(df1['registration date'])
+        df1['expiration date'] = pd.to_datetime(df1['expiration date'])
+        df1['registration date'] = df1['registration date'].dt.date
+        df1['expiration date'] = df1['expiration date'].dt.date
+        path_to_file1 = os.path.join(BASE_DIR, 'full_bd/База по промышленным образцам.xlsx')
+        workbook = xlsxwriter.Workbook(path_to_file1, {'constant_memory': True, 'strings_to_urls': False})
+        worksheet1 = workbook.add_worksheet()
+        columns = prom_bd_excel()
+        for col in range(len(columns)):
+            worksheet1.write(0, col, columns[col])
+        for row in range(1, len(df1) + 1):
+            for col in range(0, len(df1.columns)):
+                try:
+                    worksheet1.write(row, col, df1.iloc[row, col])
+                except:
+                    worksheet1.write(row, col, '')
+        workbook.close()
+        query3 = PModels_bd.objects.all().values_list('registration_number', 'registration_date', 'application_number',
+                                                      'application_date', 'authors', 'authors_latin', 'patent_holders',
+                                                      'patent_holders_latin', 'correspondence_address',
+                                                      'correspondence_address_latin', 'utility_model_name',
+                                                      'patent_starting_date', 'crimean_utility_application_number',
+                                                      'crimean_utility_application_date',
+                                                      'crimean_utility_patent_number_in_ukraine',
+                                                      'receipt_date_of_additional_data_to_application',
+                                                      'date_of_application_to_wich_additional_data_has_been_received',
+                                                      'number_of_application_to_wich_additional_data_has_been_received',
+                                                      'initial_application_number', 'initial_application_date',
+                                                      'initial_application_priority_date',
+                                                      'previous_application_number',
+                                                      'previous_application_date', 'paris_convention_priority_number',
+                                                      'paris_convention_priority_date',
+                                                      'paris_convention_priority_country',
+                                                      'pct_application_examination_start_date',
+                                                      'pct_application_number',
+                                                      'pct_application_date', 'pct_application_publish_number',
+                                                      'pct_application_publish_date', 'patent_grant_publish_date',
+                                                      'patent_grant_publish_number', 'revoke_patent_number',
+                                                      'expiration_date',
+                                                      'utility_formula_numbers_for_which_patent_term_is_prolonged',
+                                                      'actual', 'publication_url', 'mpk', 'unnamed_39', 'unnamed_40',
+                                                      'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn', 'okfs',
+                                                      'okfs_code', 'okopf', 'okopf_code')
+        df3 = pd.DataFrame(list(query3), columns=pmodels_bd_excel())
+        df3['registration date'] = pd.to_datetime(df3['registration date'])
+        df3['expiration date'] = pd.to_datetime(df3['expiration date'])
+        df3['registration date'] = df3['registration date'].dt.date
+        df3['expiration date'] = df3['expiration date'].dt.date
+        path_to_file3 = os.path.join(BASE_DIR, 'full_bd/База по полезным моделям.xlsx')
+        workbook = xlsxwriter.Workbook(path_to_file3, {'constant_memory': True, 'strings_to_urls': False})
+        worksheet1 = workbook.add_worksheet()
+        columns = pmodels_bd_excel()
+        for col in range(len(columns)):
+            worksheet1.write(0, col, columns[col])
+        for row in range(1, len(df3) + 1):
+            for col in range(0, len(df3.columns)):
+                try:
+                    worksheet1.write(row, col, df3.iloc[row, col])
+                except:
+                    worksheet1.write(row, col, '')
+        workbook.close()
         zip_path = os.path.join(BASE_DIR, "full_bd/Вся база патентов.zip")
         with zipfile.ZipFile(zip_path, mode='w') as zf:
-            zf.write(os.path.join(BASE_DIR, 'full_bd/База по изобретениям.csv'))
-            path_to_file1 = os.path.join(BASE_DIR, 'full_bd/База по промышленным образцам.xlsx')
-            with zf.open(path_to_file1, "w") as buffer:
-                with pd.ExcelWriter(buffer) as writer:
-                    query1 = Prom_bd.objects.all().values_list('registration_number', 'registration_date', 'application_number', 'application_date', 'authors', 'authors_latin', 'patent_holders',
-                                                         'patent_holders_latin', 'correspondence_address', 'correspondence_address_latin', 'industrial_design_name', 'patent_starting_date',
-                                                         'crimean_industrial_design_application_number', 'crimean_industrial_design_application_date',
-                                                         'crimean_industrial_design_patent_number_in_ukraine', 'receipt_date_of_additional_data_to_application',
-                                                         'date_of_application_to_wich_additional_data_has_been_received', 'number_of_application_to_wich_additional_data_has_been_received',
-                                                         'initial_application_number', 'initial_application_date', 'initial_application_priority_date', 'previous_application_number', 'previous_application_date',
-                                                         'paris_convention_priority_number', 'paris_convention_priority_date', 'paris_convention_priority_country',
-                                                         'patent_grant_publish_date', 'patent_grant_publish_number', 'revoke_patent_number',
-                                                         'expiration_date', 'numbers_of_list_of_essential_features', 'industrial_designs_names_and_number',
-                                                         'actual', 'publication_url', 'actual_date', 'mkpo', 'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn', 'okfs', 'okfs_code',
-                                                         'okopf', 'okopf_code')
-                    df1 = pd.DataFrame(list(query1), columns=prom_bd_excel())
-                    df1['registration date'] = pd.to_datetime(df1['registration date'])
-                    df1['expiration date'] = pd.to_datetime(df1['expiration date'])
-                    df1['registration date'] = df1['registration date'].dt.date
-                    df1['expiration date'] = df1['expiration date'].dt.date
-                    df1.to_excel(writer, index=False)
-            path_to_file3 = os.path.join(BASE_DIR, 'full_bd/База по полезным моделям.xlsx')
-            with zf.open(path_to_file3, "w") as buffer:
-                with pd.ExcelWriter(buffer) as writer:
-                    query3 = PModels_bd.objects.all().values_list('registration_number', 'registration_date', 'application_number',
-                                                                  'application_date', 'authors', 'authors_latin', 'patent_holders',
-                                                                  'patent_holders_latin', 'correspondence_address',
-                                                                  'correspondence_address_latin', 'utility_model_name',
-                                                                  'patent_starting_date', 'crimean_utility_application_number',
-                                                                  'crimean_utility_application_date', 'crimean_utility_patent_number_in_ukraine',
-                                                                  'receipt_date_of_additional_data_to_application',
-                                                                  'date_of_application_to_wich_additional_data_has_been_received',
-                                                                  'number_of_application_to_wich_additional_data_has_been_received',
-                                                                  'initial_application_number', 'initial_application_date',
-                                                                  'initial_application_priority_date', 'previous_application_number',
-                                                                  'previous_application_date', 'paris_convention_priority_number',
-                                                                  'paris_convention_priority_date', 'paris_convention_priority_country',
-                                                                  'pct_application_examination_start_date', 'pct_application_number',
-                                                                  'pct_application_date', 'pct_application_publish_number',
-                                                                  'pct_application_publish_date', 'patent_grant_publish_date',
-                                                                  'patent_grant_publish_number', 'revoke_patent_number', 'expiration_date',
-                                                                  'utility_formula_numbers_for_which_patent_term_is_prolonged',
-                                                                  'actual', 'publication_url', 'mpk', 'unnamed_39', 'unnamed_40',
-                                                                  'head_or_branch', 'id_child', 'inn', 'is_active', 'ogrn', 'okfs',
-                                                                  'okfs_code', 'okopf', 'okopf_code')
-                    df3 = pd.DataFrame(list(query3), columns=pmodels_bd_excel())
-                    df3['registration date'] = pd.to_datetime(df3['registration date'])
-                    df3['expiration date'] = pd.to_datetime(df3['expiration date'])
-                    df3['registration date'] = df3['registration date'].dt.date
-                    df3['expiration date'] = df3['expiration date'].dt.date
-                    df3.to_excel(writer, index=False)
+            zf.write(os.path.join(BASE_DIR, 'full_bd/База по изобретениям.xlsx'))
+            zf.write(os.path.join(BASE_DIR, 'full_bd/База по полезным моделям.xlsx'))
+            zf.write(os.path.join(BASE_DIR, 'full_bd/База по промышленным образцам.xlsx'))
         response = FileResponse(open(zip_path, 'rb'))
         return response
 
