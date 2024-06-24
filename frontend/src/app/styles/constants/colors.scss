@@ -1,8 +1,8 @@
 :root {
     /* base colors */
-    --primary-color: #1677ff;
+    --primary-color: var(--blue-400);
     --secondary-color: #e6eff6;
-    --active-color: #1890ff;
+    --active-color: var(--blue-400);
     --border-color: var(--grey-400);
 
     /* background */

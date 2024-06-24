@@ -1,5 +1,10 @@
-.chart-block {
+.error-block {
     display: flex;
+    width: 100%;
+}
+
+.history-table-block-disabled {
+    pointer-events: none;
 }
 
 .title {
@@ -7,4 +12,28 @@
     margin-bottom: 10px;
     font-size: 1rem;
     font-weight: bold;
+}
+
+.charts-wrapper {
+    display: flex;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .icon {
+        font-size: 3rem;
+        color: var(--grey-600);
+    }
+
+    .message {
+        margin: 10px 0;
+        color: var(--grey-600);
+        font-family: Rosatom-Regular, sans-serif;
+        font-size: 1.1rem;
+        font-weight: 400;
+    }
 }

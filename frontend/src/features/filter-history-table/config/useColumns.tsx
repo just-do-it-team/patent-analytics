@@ -10,6 +10,7 @@ export const useColumns = () => {
       key: "inn",
       width: "20%",
       ellipsis: true,
+
       onCell: () => {
         return {
           style: {
@@ -25,7 +26,6 @@ export const useColumns = () => {
       dataIndex: "okopf",
       key: "okopf",
       width: "25%",
-      ellipsis: true,
       onCell: () => {
         return {
           style: {

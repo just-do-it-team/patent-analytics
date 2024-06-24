@@ -1,5 +1,8 @@
-import { createSlice } from "@reduxjs/toolkit"
-import { ImportSchema } from "@/entities/import/model/types/importSchema"
+import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import {
+  FilterHistoryDataType,
+  ImportSchema,
+} from "@/entities/import/model/types/importSchema"
 import {
   getFilterHistoryData,
   getSelectedData,
@@ -22,12 +25,19 @@ const initialState: ImportSchema = {
     isLoading: false,
     error: null,
   },
+  selectedFilterRow: null,
 }
 
 const imoprtSlice = createSlice({
   name: "import",
   initialState,
   reducers: {
+    setSelectedFilterRow(
+      state,
+      action: PayloadAction<FilterHistoryDataType | null>,
+    ) {
+      state.selectedFilterRow = action.payload
+    },
     openModal(state = initialState) {
       state.isOpenModal = true
     },
@@ -64,5 +74,6 @@ const imoprtSlice = createSlice({
   },
 })
 
-export const { openModal, closeModal } = imoprtSlice.actions
+export const { openModal, closeModal, setSelectedFilterRow } =
+  imoprtSlice.actions
 export const { reducer: importReducer } = imoprtSlice

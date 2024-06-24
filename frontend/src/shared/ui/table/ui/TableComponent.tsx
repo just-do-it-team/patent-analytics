@@ -12,10 +12,6 @@ export const TableComponent = memo(
   (props: TableComponentProps & TableProps) => {
     const { total, columns, dataSource, isLoading, isError, ...rest } = props
 
-    // if (isError) {
-    //   return <FetchError />
-    // }
-
     return (
       <>
         <Table
