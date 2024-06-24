@@ -48,7 +48,9 @@ export const Navbar: FC = memo(() => {
     <div className={classes.Navbar}>
       <Menu
         onClick={onClick}
-        className={classes.menu}
+        className={
+          analyticsData.isLoading ? classes["menu-disabled"] : classes.menu
+        }
         mode="inline"
         items={items}
         selectedKeys={[current]}
