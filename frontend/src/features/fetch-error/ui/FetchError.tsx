@@ -7,7 +7,9 @@ export const FetchError = memo(() => {
   return (
     <div className={classes.container}>
       <FrownOutlined className={classes.icon} />
-      <Typography className={classes.message}>Ничего не найдено..</Typography>
+      <Typography className={classes.message}>
+        По данному запросу патентов не найдено
+      </Typography>
     </div>
   )
 })

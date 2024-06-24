@@ -3,7 +3,10 @@ import { TablePaginationConfig, Typography } from "antd"
 import classes from "./filterHistoryTable.module.scss"
 import { TableComponent } from "@/shared/ui/table"
 import { useColumns } from "@/features/filter-history-table/config/useColumns"
-import { openModal } from "@/entities/import/model/slice/importSlice"
+import {
+  openModal,
+  setSelectedFilterRow,
+} from "@/entities/import/model/slice/importSlice"
 import {
   useAppDispatch,
   useAppSelector,
@@ -21,9 +24,12 @@ export const FilterHistoryTable = memo(() => {
   const [total, setTotal] = useState<number>(1)
 
   const filterHistoryColumns = useColumns()
+  const pathName = window.location.href.split("/").filter(Boolean).pop()
 
   const dispatch = useAppDispatch()
-  const { filterHistory } = useAppSelector(state => state.import)
+  const { filterHistory, selectedFilterRow } = useAppSelector(
+    state => state.import,
+  )
 
   useEffect(() => {
     dispatch(
@@ -38,6 +44,12 @@ export const FilterHistoryTable = memo(() => {
     if (filterHistory.data) setTotal(filterHistory.data.count)
   }, [filterHistory])
 
+  useEffect(() => {
+    if (pathName === "import") {
+      dispatch(setSelectedFilterRow(null))
+    }
+  }, [dispatch, pathName])
+
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setPage(pagination.current!)
     setLimit(pagination.pageSize!)
@@ -45,14 +57,18 @@ export const FilterHistoryTable = memo(() => {
   }
 
   const onRowClick = (record: FilterHistoryDataType) => () => {
-    const pathName = window.location.href.split("/").filter(Boolean).pop()
+    // if (record) {
+    //   dispatch(setSelectedFilterRow(record))
+    // }
 
     if (record && pathName === "import") {
+      dispatch(setSelectedFilterRow(null))
       dispatch(getSelectedData({ id: record.id! }))
       dispatch(openModal())
     }
 
     if (record && pathName === "visualization") {
+      dispatch(setSelectedFilterRow(record))
       dispatch(getAnalyticsData({ id: record.id! }))
     }
   }
@@ -70,6 +86,11 @@ export const FilterHistoryTable = memo(() => {
         columns={filterHistoryColumns}
         dataSource={filterHistory && filterHistory.data.results}
         rowKey={record => record.id}
+        rowClassName={(record: any) =>
+          selectedFilterRow && record.id === selectedFilterRow.id
+            ? "ant-table-row-selected"
+            : ""
+        }
         onRow={record => ({
           onClick: onRowClick(record),
         })}

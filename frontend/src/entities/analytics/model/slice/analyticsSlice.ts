@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit"
 import { AnalyticsSchema } from "@/entities/analytics/model/types/analyticsSchema"
 import { getAnalyticsData } from "@/entities/analytics/model/services/analyticsService"
 

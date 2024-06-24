@@ -21,7 +21,8 @@
 }
 
 .ant-table-tbody > tr.ant-table-row-selected > td {
-    background: var(--secondary-color) !important;
+    color: var(--white) !important;
+    background: var(--active-color) !important;
 }
 
 .ant-table {
